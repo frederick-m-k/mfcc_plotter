@@ -130,10 +130,10 @@ It allows the comparison of two plots next to each other.
 ### Technical background
 Found in the `src/mfcc_display/` directory. Will be separated into a new repository before going into production.
 Developed with python and tkinter.
-Used packages are found in the `src/requirements.txt` file.
+Used packages are found in the `requirements.txt` file.
 
 ### Old repository
-In an older version, the MFCC-Plotter used to be part of a bigger repo with several projects:
+In an older version, the MFCC-Plotter used to be part of a bigger repo with several projects: https://gitlab.lrz.de/ru95job/speakerrecognitionproject.git
 
 ### Versions
 | version | comment |

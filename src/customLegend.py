@@ -6,8 +6,12 @@ import config
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
+################
+#### deprecated
+################
 class CustomLegend(tk.Frame):
+    """deprecated
+    """
 
     def __init__(self, master, speaker1, speaker2, phonemes, lambda_func, configuration):
         tk.Frame.__init__(self, master)
