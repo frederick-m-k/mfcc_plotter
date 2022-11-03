@@ -15,9 +15,6 @@ It allows the comparison of two plots next to each other.
             - currently working on this
         - toolbar above new dropdown menus for every death star
     - additional thought -> info menu in middle of toolbar (where craftyy man go for theirb afterwork beer)
-- clean code and make view and model as classes
-    - missing cleanup: view
-    - model and view not classes yet
 
 
 ### Gedanken zum Treffen
@@ -141,4 +138,4 @@ In an older version, the MFCC-Plotter used to be part of a bigger repo with seve
 | version | comment |
 | - | - |
 | v0.5.0 | intial version on this repo |
-| | |
+| v0.5.1 | code got cleaned |

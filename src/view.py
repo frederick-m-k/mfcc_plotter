@@ -2,23 +2,16 @@
 import math
 import sys
 import tkinter as tk
-from tkinter import ttk, font, messagebox
+from tkinter import font, messagebox
 from tkinter import filedialog
-from tkinter.constants import NO
 from PIL import Image, ImageTk
-
-from matplotlib import pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import config
 from config import logging as logging
-import numpy as np
-from customLegend import CustomLegend
 from deathStar import DeathStar
 from custom_label import CustomLabel
 
 import model
-from category import Category
 
 global root
 global button_choose_file
@@ -43,6 +36,9 @@ set_phonemes = dict()
 
 
 def init_view():
+    """Initiate all view-wide variables in the view
+    @called by: controller
+    """
     logging.debug("Initiating the view")
     global main_screen_width, main_screen_height
     global root
@@ -61,10 +57,6 @@ def init_view():
     root.geometry("{}x{}+{}+{}".format(screen_width,
                                        screen_height, int(0.05*main_screen_width), int(0.05*main_screen_height)))
 
-    # title = tk.Label(root, text=conf.app_name, font=(
-    #     conf.font_family, conf.brand_size - 4), justify="left")
-    # title.grid(column=0, columnspan=2, row=2, padx=25, pady=25)
-
     # font stuff
     default_font = font.nametofont("TkDefaultFont")
     default_font.configure(family=conf.treeview_font, size=conf.font_size)
@@ -75,22 +67,15 @@ def init_view():
     im = Image.open("src/imgs/information-button.png").resize((25, 25))
     info_im = ImageTk.PhotoImage(im)
 
-    init_start_screen()
+    _init_start_screen()
 
-    init_information_screen()
-
-
-def init_choose_file(browse_files):
-    global button_choose_file
-    button_choose_file = tk.Button(
-        root, text="Choose 2 wavs and 2 TextGrids", font=(conf.font_family, conf.font_size), command=browse_files)
-    button_choose_file.place(anchor="center", relx=.5, rely=.5)
+    _init_information_screen()
 
 
-def init_start_screen():
-    '''
-        Initialize a start screen with some background information
-    '''
+def _init_start_screen():
+    """Initialize a start screen with some background information
+    @called by: internal
+    """
     start_frame = tk.Frame(root)
 
     start_frame.place(anchor="center", relx=.5, rely=.5)
@@ -98,13 +83,19 @@ def init_start_screen():
     start_prompt = tk.Label(start_frame, text=conf.start_prompt_text, font=(
         conf.font_family, conf.font_size))
     start_button = tk.Button(start_frame, text="Start the app", font=(conf.font_family, conf.font_size),
-                             command=lambda: switch_toDoubleDisplay(start_frame))  # switch_to_chooseFile(start_frame, browse_files)
+                             command=lambda: _switch_toDoubleDisplay(start_frame))
 
     start_prompt.pack(side="top")
     start_button.pack(side="top")
 
 
-def switch_toDoubleDisplay(frame):
+def _switch_toDoubleDisplay(frame: tk.Frame):
+    """Show the two-DeathStar-display
+    @called by: internal
+
+    Args:
+        frame (tk.Frame): frame to add the DeathStars to
+    """
     global stars
     stars = []
     [ch.destroy() for ch in frame.winfo_children()]
@@ -126,19 +117,20 @@ def switch_toDoubleDisplay(frame):
     stars.append(merged_star)
 
     merge_button = tk.Button(frame, text="Merge",
-                             command=lambda: switch_display(merge_button, left_star, right_star, merged_star))
+                             command=lambda: _toggle_merge(merge_button, left_star, right_star, merged_star))
     merge_button.place(anchor="center", relx=.5, rely=.25)
 
     lab = tk.Label(frame, image=info_im)
     lab.place(anchor="center", relx=0.98, rely=.25)
-    lab.bind("<Button-1>", lambda event: show_information_screen(event))
+    lab.bind("<Button-1>", lambda event: _show_information_screen(event))
 
 
 def get_range_of_stars():
-    """
+    """Get the minimal and maximal values of all mfccs in all stars
+    @called by: DeathStar
 
     Returns:
-        list[float]: x_range[bottom, top]
+        [float]: [x_bottom, x_top]
     """
     def get_range_of_merged(min_max):
         if len(star.left_mfccs) <= 0 or len(star.right_mfccs) <= 0:
@@ -177,7 +169,13 @@ def get_range_of_stars():
     return [bottom-(0.05*abs(bottom)), top+(0.05*abs(top))]
 
 
-def reload_other_statistics(star2not_reload):
+def reload_other_statistics(star2not_reload: DeathStar):
+    """Reload the statistics display of all DeathStars (except for one which is given as parameter)
+    @called by: DeathStar
+
+    Args:
+        star2not_reload (DeathStar)
+    """
     for star in stars:
         if star == star2not_reload:
             continue
@@ -185,7 +183,16 @@ def reload_other_statistics(star2not_reload):
         star.reload_statistics()
 
 
-def switch_display(button, left_star, right_star, merged_star):
+def _toggle_merge(button: tk.Button, left_star: DeathStar, right_star: DeathStar, merged_star: DeathStar):
+    """Merge or unmerge the two DeathStars
+    @called by: internal
+
+    Args:
+        button (tk.Button): to check if merged or not merged
+        left_star (DeathStar)
+        right_star (DeathStar)
+        merged_star (DeathStar)
+    """
     cur_text = button.cget("text")
     if cur_text == "Merge":
         if left_star.got_data and right_star.got_data:
@@ -210,7 +217,15 @@ def switch_display(button, left_star, right_star, merged_star):
     root.update()
 
 
-def handle_options(event, tree, star):
+def handle_options(event, tree, star: DeathStar):
+    """If user clicked on any possible option, set the selected option in the corresponding death star
+    @called by: DeathStar
+
+    Args:
+        event (tk.MouseEvent): to get clicked coordinates
+        tree (~ tk.Treeview): to get string of clicked coordinates
+        star (DeathStar): to set the selected option in
+    """
     item = tree.identify("item", event.x, event.y)
     label = tree.item(item, "values")
     if len(label) > 0:
@@ -238,110 +253,17 @@ def handle_options(event, tree, star):
         stars[2].give_data(stars[0].current_mfccs, stars[1].current_mfccs)
 
 
-def switch_to_chooseFile(frame, chooseFile_func):
-    frame.place_forget()
-    init_choose_file(chooseFile_func)
-
-
-def init_all_options(speaker2phoneme):
-    button_choose_file.place_forget()
-    # button_choose_file.place(x=10, y=10)
-    # TODO replace button for choosing files and add functionality for clearing existing data
-
-    main_frame = tk.Frame(root)
-    main_frame.place(anchor="center", relx=.5, rely=.5)
-
-    phoneme_prompt = tk.Label(main_frame, text="Choose your phonemes",
-                              font=(conf.font_family, conf.heading_size), pady=15)
-    phoneme_prompt.pack(side="top")
-    _create_phoneme_options(main_frame, speaker2phoneme)
-
-# phoneme options
-
-
-def _create_phoneme_options(main_frame, speaker2phoneme):
-    '''
-    Create the list boxes for choosing the phoneme labels
-    '''
-    # global customFont
-    box_frame = tk.Frame(main_frame)
-    box_frame.pack(side="top")
-    width = int(main_screen_width / 8)
-
-    for speaker, phonemes in speaker2phoneme.items():
-        tree_labels.append(speaker)
-        for _ in range(2):
-            option = ttk.Treeview(
-                box_frame, columns=speaker, displaycolumns=speaker)
-            option.column("#0", width=0, stretch=NO)
-            option.column(speaker, width=width, anchor="center", stretch=True)
-            option.heading(speaker, text=speaker, anchor="center")
-            for phoneme in phonemes:
-                option.insert('', 'end', text='', values=(phoneme))
-            option.pack(side="left")
-            tree2selected[option] = ""
-            option.bind("<Button-1>", lambda event,
-                        tree=option: handle_phoneme_selection(event, tree, main_frame))
-
-
-def handle_phoneme_selection(event, tree, main_frame):
-    '''
-
-    '''
-    # TODO remove all empty segments "" from TextGrids -> maybe at the parser
-    item = tree.identify("item", event.x, event.y)
-    label = tree.item(item, "values")
-    label = label[0]
-    tree2selected[tree] = label
-
-    if check_tree_selection4integrity():  # all labels selected
-
-        children = main_frame.winfo_children()
-        # TODO this is hardcoded. Make it better, when you have time
-        for i in range(len(children)):
-            if i > 1:
-                children[i].destroy()
-        selected_per_Frame.clear()
-
-        if check_tree_selection4SamePhoneme():
-            show_error(config.ErrorMessages.SAME_PHONEME.value)
-            return
-
-        # create the button to display the MFCCs
-        button_display_mfccs = tk.Button(main_frame, text="Display MFCCs",
-                                         font=(conf.font_family, conf.font_size), command=lambda: prep_visualization(main_frame))
-        button_display_mfccs.pack(side="bottom")
-        button_display_mfccs["state"] = "disabled"
-        # _create_norm_options(
-        #     main_frame, tree2selected.values(), button_display_mfccs)
-        _create_mfccCalculation_options(main_frame, button_display_mfccs)
-
-
-def check_tree_selection4SamePhoneme():
-    '''
-
-    '''
-    tmp = list(tree2selected.values())
-    return ((tmp[0] == tmp[1]) or (tmp[2] == tmp[3]))
-
-
-def check_tree_selection4integrity():
-    '''
-        check, if all trees got a selected label
-        return True if that's correct
-    '''
-    return_val = True
-    for _, value in tree2selected.items():
-        if value == "":
-            return_val = False
-    return return_val
-
-
-def init_information_screen():
+def _init_information_screen():
+    """Doing nothing right now... TODO: check if necessary
+    @called by: internal
+    """
     pass
 
 
-def show_information_screen(event):
+def _show_information_screen():
+    """Init and show information screen
+    @called by: internal
+    """
     global info_frame
     width = main_screen_width - 0.1*main_screen_width
     canvas_width = width - 0.05 * width
@@ -350,7 +272,7 @@ def show_information_screen(event):
                           highlightbackground="grey", highlightthickness=4, width=width, height=main_height - 0.1*main_height)
 
     close_button = tk.Button(info_frame, text="Close",
-                             command=hide_information_screen)
+                             command=_hide_information_screen)
     close_button.pack(side="bottom")
 
     info_praat = CustomLabel(info_frame, justify="center", text="""Currently used Praat path.
@@ -365,7 +287,7 @@ def show_information_screen(event):
     input_praat.pack(side="top")
 
     praat_path_button = tk.Button(info_frame, text="Set Praat path",
-                                  command=lambda: set_praat_path(input_praat, close_button))
+                                  command=lambda: _set_praat_path(input_praat, close_button))
     praat_path_button.pack(side="top", pady=5)
 
     canvas = tk.Canvas(info_frame, width=canvas_width, height=10, bg="white")
@@ -417,254 +339,50 @@ def show_information_screen(event):
             subtract the mean and divide by the st dev for each frame of the selected phoneme""")
     info_norm.pack(side="top")
 
-    # canvas = tk.Canvas(info_frame, width=width - 0.05 *
-    #                    width, height=10, bg="white")
-    # canvas.create_line(0.05*canvas_width, 5,
-    #                    canvas_width - 0.05*canvas_width, 5)
-    # canvas.pack(side="top")
-
-    # flat_joke = CustomLabel(
-    #     info_frame, justify="center", text="What is the most favorite data type of a ghost?"
-    # )
-    # flat_joke.pack(side="top")
-    # flat_joke.bind()
-
     info_frame.place(anchor="center", relx=.5, rely=.5)
 
 
-def hide_information_screen():
+def _hide_information_screen():
+    """Destroy the information screen
+    """
     info_frame.destroy()
 
 
-def set_praat_path(text_widget_praat, new_focus):
+def _set_praat_path(text_widget_praat, new_focus):
     """Set the new praat path in the model.
     Set the focus of the application on the parameter new_focus
+    @called by: internal
 
     Args:
-        text_widget_praat (tk Text): get the set praat path
-        new_focus (tk Widget): set the focus to
+        text_widget_praat (tk.Text): get the set praat path
+        new_focus (tk.Widget): set the focus to
     """
     model.set_praat_path(text_widget_praat.get("0.0", tk.END).strip())
     new_focus.focus_set()
 
 
-def prep_visualization(main_frame):
-    # remove all options and stuff
-    main_frame.place_forget()
-
-    # normalize in the model
-    # if selected_per_Frame[config.Norm] == config.Norm.NO_NORM.value:
-    #     spk2phos2frames = no_norm_mfccs(selected_per_Frame[config.Calc])
-    # elif selected_per_Frame[config.Norm] == config.Norm.NORM_SPEAKER.value:
-    #     spk2phos2frames = norm_mfccs_rem_speaker(
-    #         selected_per_Frame[config.Calc])
-    # elif selected_per_Frame[config.Norm] == config.Norm.NORM_PHONEME.value:
-    #     spk2phos2frames = norm_mfccs_rem_phonem(
-    #         selected_per_Frame[config.Calc], list(tree2selected.values()))
-    # else:
-    #     print(selected_per_Frame[config.Norm])
-
-    # show death star
-    # display_mfccs(spk2phos2frames)
-
-
-def _create_mfccCalculation_options(main_frame, button_display_mfccs):
-    '''
-        create a treeview to display options of mfcc calculation
-        and add it to the given parameter main_frame
-    '''
-    box_frame = tk.Frame(main_frame)
-    box_frame.pack(side="bottom", pady=20)
-
-    calc_options = ["praat", "librosa"]
-
-    column_name = "calc_option"
-    width = int(main_screen_width / 8)
-    options = ttk.Treeview(box_frame, columns=column_name,
-                           height=len(calc_options))
-    options.column("#0", width=0, stretch=NO)
-    options.column(column_name, width=width, anchor="center")
-    options.heading(
-        column_name, text="Choose mfcc calculation option", anchor="center")
-    for calc_option in calc_options:
-        options.insert('', "end", text='', values=(calc_option, ))
-    options.bind("<Button-1>", lambda event,
-                 tree=options: handle_options(event, tree, main_frame, button_display_mfccs))
-    options.pack(side="left")
-
 
 def start_view():
     """Start the root mainloop.
     Add protocol to execute model json-save function on window closing
+    @called by: controller
     """
-    root.protocol("WM_DELETE_WINDOW", end_view)
+    root.protocol("WM_DELETE_WINDOW", _end_view)
 
     root.mainloop()
 
 
-def end_view():
+def _end_view():
+    """Too call on shutting down to program
+    @called by: internal
+    """
     model.save_config_file()
     root.destroy()
 
 
-def display_mfccs(spk2phos2frames, n_mfccs=conf.n_mfccs):
-    global global_min, global_max
-
-    speaker1 = tree_labels[0]
-    speaker2 = tree_labels[1]
-    label1 = list(tree2selected.values())[0]
-    label2 = list(tree2selected.values())[1]
-    label3 = list(tree2selected.values())[2]
-    label4 = list(tree2selected.values())[3]
-    mfccs1 = spk2phos2frames[speaker1][label1]
-    mfccs2 = spk2phos2frames[speaker1][label2]
-    mfccs3 = spk2phos2frames[speaker2][label3]
-    mfccs4 = spk2phos2frames[speaker2][label4]
-    all_graphs[(speaker1, label1)] = Category(
-        speaker1, label1, mfccs1, first=True)
-    all_graphs[(speaker1, label2)] = Category(
-        speaker1, label2, mfccs2, first=True)
-    all_graphs[(speaker2, label3)] = Category(
-        speaker2, label3, mfccs3, first=False)
-    all_graphs[(speaker2, label4)] = Category(
-        speaker2, label4, mfccs4, first=False)
-
-    set_phonemes[(speaker1, label1)] = False
-    set_phonemes[(speaker1, label2)] = False
-    set_phonemes[(speaker2, label3)] = False
-    set_phonemes[(speaker2, label4)] = False
-
-    global_min, global_max = get_global_min_max(speaker1, label1)
-
-    all_graphs[(speaker1, label1)].set_color(config.ColorCoding.CAT1.value)
-    all_graphs[(speaker1, label2)].set_color(config.ColorCoding.CAT2.value)
-
-    all_graphs[(speaker2, label3)].set_color(config.ColorCoding.CAT3.value)
-    all_graphs[(speaker2, label4)].set_color(config.ColorCoding.CAT4.value)
-
-    plt.rcParams["hatch.linewidth"] = 4.0
-    plt.rcParams.update({'font.family': conf.font_family})
-
-    create_frame()
-    legend = create_legend(label1, label2, label3, label4, speaker1, speaker2)
-
-    plot_sub(speaker1, label1, first=True)
-    plot_sub(speaker1, label2, first=True)
-    plot_sub(speaker2, label3, first=False)
-    plot_sub(speaker2, label4, first=False)
-
-    update_plot(speaker1, label1, legend)
-
-
-def create_legend(phonem1, phonem2, phonem3, phonem4, speaker1, speaker2):
-    legend = CustomLegend(root, speaker1, speaker2, [
-        phonem1, phonem2, phonem3, phonem4], update_plot, conf)
-
-    legend.place(anchor=tk.N, relx=.85, rely=.15)
-
-    return legend
-
-
-def create_frame():
-    # 7 for small MacBookPro
-    # 14 for BigMac display
-    global fig, ax, plot
-    figSize = math.floor(main_screen_width / 240)
-    # print(figSize)
-    fig, ax = plt.subplots(
-        figsize=(figSize, figSize), dpi=100, subplot_kw=dict(polar=True))
-
-    plot = FigureCanvasTkAgg(fig, root)
-    plot.get_tk_widget().place(anchor="center", relx=.5, rely=.5)
-
-    plot_mfccs()
-
-
-def plot_mfccs(n_mfccs=conf.n_mfccs):
-    global ax
-    temp_ang = conf.angles[:-1]
-    temp2_ang = []
-    for ang in temp_ang:
-        temp2_ang.append(ang + (1/(n_mfccs*2)*(2*np.pi)))
-    ax.set_theta_offset(np.pi / 2)
-    ax.set_theta_direction(-1)
-    global theta_labels
-    _, theta_labels = ax.set_thetagrids(np.degrees(temp2_ang), conf.labels, fontsize=12, rotation_mode="default",
-                                        ha="center", va="center", rotation=45)
-
-    ax.set_rlabel_position(5)
-    ax.set_rmax(20)
-
-
-def plot_sub(speaker, phonem, first, n_mfccs=conf.n_mfccs):
-    ''' first is a @param to determine, if the mfccs should be plotted in the first or second half pie piece '''
-    global global_min, global_max
-    category = all_graphs[(speaker, phonem)]
-    half_pie_piece = (1/(n_mfccs*2)*(2*np.pi))
-    for i in range(n_mfccs):
-        if first:
-            updated_sec_angle = conf.angles[i+1] - half_pie_piece
-            all_graphs[(speaker, phonem)].add_graphic(ax.fill_betweenx([category.values[i], global_min, global_max, category.values[i+n_mfccs]],
-                                                                       conf.angles[
-                                                                           i], updated_sec_angle, color=category.main_color, edgecolor=category.edgecolor,
-                                                                       facecolor=category.facecolor, alpha=category.alpha, hatch=category.hatch))
-            all_graphs[(speaker, phonem)].add_graphic(ax.fill_betweenx([category.medians[i], global_min, global_max, category.medians[i]], conf.angles[i],
-                                                                       updated_sec_angle, color=category.median_color, alpha=0.2))
-        else:
-            updated_first_angle = conf.angles[i] + half_pie_piece
-            all_graphs[(speaker, phonem)].add_graphic(ax.fill_betweenx([category.values[i], global_min, global_max, category.values[i+n_mfccs]],
-                                                                       updated_first_angle, conf.angles[
-                                                                           i+1], color=category.main_color, edgecolor=category.edgecolor,
-                                                                       facecolor=category.facecolor, alpha=category.alpha, hatch=category.hatch))
-            all_graphs[(speaker, phonem)].add_graphic(ax.fill_betweenx([category.medians[i], global_min, global_max, category.medians[i]], updated_first_angle,
-                                                                       conf.angles[i+1], color=category.median_color, alpha=0.2))
-
-
-def update_alpha(speaker, phonem, alpha):
-    for i in range(len(all_graphs[speaker, phonem].all_graphics)):
-        if i % 2 == 1:  # mean
-            all_graphs[(speaker, phonem)].all_graphics[i].set_alpha(alpha)
-        else:  # area between quantiles
-            all_graphs[(speaker, phonem)].all_graphics[i].set_alpha(alpha)
-
-
-def update_plot(speaker, phonem, legend, n_mfccs=conf.n_mfccs):
-    global fig, ax
-    global global_min, global_max
-
-    ax.clear()
-    plot_mfccs()
-
-    # phonem 2 always has a transparent component in their plot
-    # therefore, it should be plotted after phonem 1,
-    #   so that phonem 1 can be seen through
-    plot_sub(tree_labels[0], list(tree2selected.values())[0], first=True)
-    plot_sub(tree_labels[0], list(tree2selected.values())[1], first=True)
-    plot_sub(tree_labels[1], list(tree2selected.values())[2], first=False)
-    plot_sub(tree_labels[1], list(tree2selected.values())[3], first=False)
-
-    set_phonemes[(speaker, phonem)] = not set_phonemes[(speaker, phonem)]
-    for (sp, pho), set in set_phonemes.items():
-        if set:
-            update_alpha(sp, pho, alpha=0.9)
-            legend.update_legend(sp, pho, 0.9)
-        else:
-            update_alpha(sp, pho, alpha=0.2)
-            legend.update_legend(sp, pho, 0.2)
-
-    for i in conf.angles:
-        ax.fill_betweenx([global_min, global_max], i,
-                         i, color="black", lw=2.5)
-
-    for i in conf.angles:
-        ax.fill_betweenx([global_min, global_max], i+1/(n_mfccs*2)*(2*np.pi),
-                         i+1/(n_mfccs*2)*(2*np.pi), color="#d2d2d2", lw=1.5)
-
-    plot.draw()
-
-
 def get_choosen_files():
     """Ask user to provide files
+    @called by: DeathStar
 
     Returns:
         (str): tuple of all filenames
@@ -679,29 +397,32 @@ def get_choosen_files():
     return filenames
 
 
-def get_global_min_max(default_speaker, default_label):
-    glob_min = all_graphs[(default_speaker, default_label)].min
-    glob_max = all_graphs[(default_speaker, default_label)].max
-    for cat in all_graphs.values():
-        if cat.min < glob_min:
-            glob_min = cat.min
-        if cat.max > glob_max:
-            glob_max = cat.max
-    return glob_min, glob_max
 
-# all warning/error methods
+#########
+### all warning/error methods
+#########
+def _show_error(message: str):
+    """Show a messagebox (python module) warning (treated as error here). TODO improve this
 
-
-def show_error(message):
+    Args:
+        message (str): message to display
+    """
     messagebox.showwarning(conf.app_name + " error", message)
 
 
-def show_warning(message):
+def show_warning(message: str):
+    """Show a messagebox (python module) info (treated as warning here). TODO improve this
+    @called by: internal and DeathStar
+
+    Args:
+        message (str): message to display
+    """
     messagebox.showinfo(conf.app_name + " warning", message)
 
 
 def display_MFCC_file_warning(mfcc_creation_problem):
     """Show a warning or error, depending on the nature of the MFCC-creation-problem
+    @called by: DeathStar
 
     Args:
         mfcc_creation_problem ([ (str, config.ErrorMessages) ]): all error messages accummulated through the MFCC creation process
@@ -713,5 +434,5 @@ def display_MFCC_file_warning(mfcc_creation_problem):
         if err_message == config.ErrorMessages.MFCC_FILES_EXIST:
             show_warning(config.ErrorMessages.MFCC_FILES_EXIST.value)
         elif err_message == config.ErrorMessages.MISSING_PRAAT_PATH:
-            show_error(config.ErrorMessages.MISSING_PRAAT_PATH.value)
+            _show_error(config.ErrorMessages.MISSING_PRAAT_PATH.value)
             return False
