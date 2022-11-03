@@ -12,6 +12,7 @@ It allows the comparison of two plots next to each other.
 - needed for it -> more space & separate possibility to export for both death stars
 - solution
     - make mfcc-calc and mfcc-norm options into smaller dropdown menu
+    - put click event on every dropdown entry
         - currently working on this
     - toolbar above new dropdown menus for every death star
 - additional thought -> info menu in middle of toolbar (where craftyy man go for theirb afterwork beer)
