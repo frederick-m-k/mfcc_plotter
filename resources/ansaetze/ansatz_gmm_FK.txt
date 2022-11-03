@@ -1,0 +1,7 @@
+Ein Ansatz in der Sprecherverifikation
+
+1. 16-teilige MFCC-Vektoren werden geclustert
+2. daraus entstehen Normalverteilungen (Gaußverteilungen) mit der Maximalwahrscheinlichkeit bei dem "Mittelpunkt" des Clusters
+3. alle Normalverteilungen werden gewichtet in ein (Koordinaten-)System gelegt => GMM
+    - sie werden nicht auf eine Maximalwahrscheinlichkeit genormt
+    - die Summe aller Gewichtungen muss 1 ergeben
