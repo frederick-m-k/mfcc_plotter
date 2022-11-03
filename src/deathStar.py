@@ -17,13 +17,23 @@ import config
 
 
 class DeathStar(tk.Frame):
-    """
-        What we need:
-          - plot
-          - dropdown menus
+    """Class as a wrapper for a death-star plot and its corresponding selection menus
+    @called by: view
     """
 
-    def __init__(self, master, figSize, config, colorCoding, screenWidth, screenHeight, root):
+    def __init__(self, master, figSize: int, config_obj: config.Config, colorCoding: config.ColorCoding, screenWidth: float, screenHeight: float, root):
+        """Initiate a DeathStar holding a death-star plot and its corresponding selection menu
+        @called by: view
+
+        Args:
+            master (tkinter object): e.g. tk.Frame
+            figSize (int): to set the size of the death-star plot. TODO!!
+            config_obj (config.Config): holding configuration variables
+            colorCoding (config.ColorCoding): holding color information for this specific DeathStar
+            screenWidth (float)
+            screenHeight (float)
+            root (tkinter object): root of the whole system
+        """
         tk.Frame.__init__(self, master)
 
         self.rec_names = ""
@@ -48,7 +58,7 @@ class DeathStar(tk.Frame):
         self.selected_phoneme = ""
         self.current_coef = -1
 
-        self.config = config
+        self.config = config_obj
         self.colorCoding = colorCoding.value
 
         self.my_width = screenWidth / 2
@@ -65,37 +75,49 @@ class DeathStar(tk.Frame):
         self.right_mfccs = []
 
         if not colorCoding.value[7]:
-            self.init_menus(config)
-        self.init_star(figSize)
+            self._init_menus(config_obj)
+        self._init_star(figSize)
 
-    def init_menus(self, conf):
+    def _init_menus(self, conf: config.Config):
+        """Initiate the selection menu
+        @called by: internal
+
+        Args:
+            conf (config.Config): _description_
+        """
         button_choose_file = tk.Button(
-            self.left_frame, text="Choose wav\nand TextGrid", font=(conf.font_family, conf.font_size), command=self.browse_files)
-        # .place(anchor="center", relx=.5, rely=.5)
-        button_choose_file.pack(side="bottom")  # , padx=10)
+            self.left_frame, text="Choose wav\nand TextGrid", font=(conf.font_family, conf.font_size), command=self._browse_files)
+        button_choose_file.pack(side="bottom")
         self.left_frame.pack(side="left", padx=5)
 
         self.menu_frame.pack(side="top")
 
-    def fill_menus(self, recName2phoneme):
-        # clear existing graphical content
+    def _fill_menus(self, recName2phoneme: dict):
+        """Firstly, clear all existing graphical content of the selection menu.
+        Afterwards, refill the seection menu again
+        @called by: internal
+
+        Args:
+            recName2phoneme (dict(str, [str]) )
+        """
         [ch.pack_forget() for ch in self.menu_frame.winfo_children()]
         if len(self.left_frame.winfo_children()) > 1:
             self.left_frame.winfo_children()[1].destroy()
 
-        self.addSpeakerLabel(
+        self._addRecLabel(
             ",\n".join([spk for spk in list(recName2phoneme.keys())]))
         self.left_frame.pack(side="left")
 
-        self.create_phoneme_options(self.menu_frame, recName2phoneme)
+        self._create_phoneme_options(self.menu_frame, recName2phoneme)
 
         calcNorm_frame = tk.Frame(self.menu_frame)
-        self.create_calulcation_options(calcNorm_frame)
-        self.create_norm_options(calcNorm_frame)
+        self._create_calculation_options(calcNorm_frame)
+        self._create_norm_options(calcNorm_frame)
         calcNorm_frame.pack(side="left", padx=10)
 
-    def locate_mfcc_on_mouse_click(self, event):
+    def _locate_mfcc_on_mouse_click(self, event):
         """Find the mfcc whose area was clicked on by user
+        @called by: internal
 
         Args:
             event (MouseEvent): MouseEvent which holds x and y pixels as well as xdata and ydata, coordinates on the star in radians
@@ -112,14 +134,21 @@ class DeathStar(tk.Frame):
         for i in range(n_mfccs):
             if event.xdata > 0:
                 if event.xdata >= step*i and event.xdata <= step*(i+1):
-                    self.plot_statistics_by_coefficient(i+1-1)
+                    self._plot_statistics_by_coefficient(i+1-1)
                     break
             else:
                 if event.xdata <= (-1)*step*i and event.xdata >= (-1)*step*(i+1):
-                    self.plot_statistics_by_coefficient(n_mfccs-i-1)
+                    self._plot_statistics_by_coefficient(n_mfccs-i-1)
         self.statistics_visible = True
 
-    def plot_statistics_by_coefficient(self, coef):
+    def _plot_statistics_by_coefficient(self, coef: int):
+        """Plot statistical information on one mfcc dimension
+        Differentiating between merged star and non-merged star
+        @called by: internal
+
+        Args:
+            coef (int): coefficient to plot information of
+        """
         self.current_coef = coef
         x_range = view.get_range_of_stars()
 
@@ -149,7 +178,7 @@ class DeathStar(tk.Frame):
 
             # close button
             close_button = tk.Button(upper_frame, text="Close",
-                                     command=self.hide_statistics)
+                                     command=self._hide_statistics)
             close_button.pack(side="right")
 
             upper_frame.pack(side="top")
@@ -209,7 +238,7 @@ class DeathStar(tk.Frame):
 
             # close button
             close_button = tk.Button(upper_frame, text="Close",
-                                     command=self.hide_statistics)
+                                     command=self._hide_statistics)
             close_button.pack(side="right")
 
             upper_frame.pack(side="top")
@@ -252,36 +281,47 @@ class DeathStar(tk.Frame):
             view.reload_other_statistics(self)
 
     def reload_statistics(self):
+        """Reload the statistical display of one mfcc dimension
+        @called by: view
+        """
         if self.statistics_visible:
             self.stat_frame.destroy()
-            self.plot_statistics_by_coefficient(self.current_coef)
+            self._plot_statistics_by_coefficient(self.current_coef)
 
-    def hide_statistics(self):
+    def _hide_statistics(self):
+        """Hide the displayed statistical information on one mfcc dimension
+        @called by: internal
+        """
         self.stat_frame.destroy()
         self.statistics_visible = False
 
-    def init_star(self, figSize):
-        # figSize = math.floor(main_screen_width / 200)
-        # print(figSize)
+    def _init_star(self, figSize: int):
+        """Initiate the death-star plot
+        @called by: internal
+
+        Args:
+            figSize (int): to set the size of the death-star plot
+        """
         fig, self.ax = plt.subplots(
             figsize=(figSize, figSize), dpi=100, subplot_kw=dict(polar=True))
 
         self.plot = FigureCanvasTkAgg(fig, self)
         self.plot.figure.canvas.mpl_connect("button_press_event",
-                                            self.locate_mfcc_on_mouse_click)
-        # self.plot.figure.canvas.mpl_connect("button_press_event",
-        #                                     DeathStar.test_mouse_event)
-        # plot.get_tk_widget().place(anchor="center", relx=.5, rely=.5)
+                                            self._locate_mfcc_on_mouse_click)
+
         self.plot.get_tk_widget().configure(highlightbackground="white")
         self.plot.get_tk_widget().pack(side="bottom", pady=20)
 
-        self.fillStarOutline()
+        self._fillStarOutline()
 
-    def fillStarOutline(self, n_mfccs=13):
+    def _fillStarOutline(self):
+        """Fill the outline of the death-star plot
+        @called by: internal
+        """
         temp_ang = self.config.angles[:-1]
         temp2_ang = []
         for ang in temp_ang:
-            temp2_ang.append(ang + (1/(n_mfccs*2)*(2*np.pi)))
+            temp2_ang.append(ang + (1/(self.config.n_mfccs*2)*(2*np.pi)))
         self.ax.set_theta_offset(np.pi / 2)
         self.ax.set_theta_direction(-1)
 
@@ -292,15 +332,22 @@ class DeathStar(tk.Frame):
         labels = self.ax.set_xticklabels(
             ["MFCC"+str(i) for i in range(1, self.config.n_mfccs+1)])
 
-    def addSpeakerLabel(self, spk):
-        spkLabel = tk.Label(self.left_frame, text=spk, font=(
+    def _addRecLabel(self, rec_name: str):
+        """Add a tk.Label with the name of the recording
+        @called by: internal
+
+        Args:
+            rec_name (str)
+        """
+        spkLabel = tk.Label(self.left_frame, text=rec_name, font=(
             self.config.font_family, self.config.font_size, "bold"))
 
         spkLabel.pack(side="top", pady=10)
 
-    def create_phoneme_options(self, main_frame, recName2phoneme):
+    def _create_phoneme_options(self, main_frame, recName2phoneme: dict):
         """Create the phoneme options graphical menu
         TODO remove variable speaker. It is unnecessary. With this, the dict recName2phoneme can be replaced with a list of phonemes
+        @called by: internal
 
         Args:
             main_frame (tk.Frame)
@@ -313,7 +360,6 @@ class DeathStar(tk.Frame):
                               displaycolumns=speaker, height=8, show="tree")
         option.column("#0", width=0, stretch=NO)
         option.column(speaker, anchor="center", stretch=NO)
-        # option.heading(speaker, text=speaker, anchor="center")
 
         default_sel = option.insert('', 'end', text='', values=("all"))
         option.selection_set(default_sel)
@@ -328,11 +374,16 @@ class DeathStar(tk.Frame):
         option.bind("<Button-1>", lambda event,
                     tree=option: view.handle_options(event, tree, self))
 
-    def create_calulcation_options(self, parent_frame):
+    def _create_calculation_options(self, parent_frame: tk.Frame):
+        """Create the calculation options menu
+        @called by: internal
+
+        Args:
+            parent_frame (tk.Frame)
+        """
         calc_options = [config.Calc.PRAAT.value, config.Calc.LIBROSA.value]
 
         column_name = "calc_option"
-        # width = int(main_screen_width / 8)
         options = ttk.Treeview(parent_frame, columns=column_name,
                                height=len(calc_options))
         options.column("#0", width=0, stretch=NO)
@@ -350,25 +401,18 @@ class DeathStar(tk.Frame):
         self.calculation_option = calc_options[0]
 
         options.bind("<Button-1>", lambda event,
-                     tree=options: view.handle_options(event, tree, self))  # , main_frame, button_display_mfccs))
+                     tree=options: view.handle_options(event, tree, self))
         options.pack(side="top", pady=10)
 
-    def create_norm_options(self, parent_frame):
-        norm_options = [config.Norm.REM_SPEAKER]
-        # all_have_partner = True
-        # # check if all selected phonems are present for both speakers
-        # for sel_phoneme in selected_phonemes:
-        #     if False in [sel_phoneme in values for values in get_all_phonemes().values()]:
-        #         all_have_partner = False
-        #         break
-        # if all_have_partner:
-        #     norm_options.append("phoneme normalization (remove speaker info)")
-        norm_options.append(config.Norm.NO_NORM)
+    def _create_norm_options(self, parent_frame: tk.Frame):
+        """Create the normalization options menu
+        @called by: internal
 
-        # tmp = tk.StringVar()
-        # tmp.set("2")
-        # self.norm_treeview = tk.OptionMenu(
-        #     parent_frame, tmp, *norm_options)
+        Args:
+            parent_frame (tk.Frame)
+        """
+        norm_options = [config.Norm.REM_SPEAKER, config.Norm.NO_NORM]
+
         column_name = "norm_option"
         self.norm_treeview = ttk.Treeview(
             parent_frame, columns=column_name, height=len(norm_options))
@@ -393,14 +437,23 @@ class DeathStar(tk.Frame):
         self.norm_treeview.pack(side="bottom")
 
     def hide_star(self):
+        """Overlap the star with a white rectangle. TODO: make better!!
+        @called by: view
+        """
         self.rect_id = self.plot.get_tk_widget().create_rectangle(
             -1, -1, self.my_width, self.my_height, fill="white")
 
     def show_star(self):
+        """Show the death-star plot
+        @called by: view
+        """
         self.show_mfccs()
         self.rect_id = None
 
-    def browse_files(self):
+    def _browse_files(self):
+        """User selects files. They get processed here, i.e. the mfccs get created by the model
+        @called by: internal
+        """
         chosen_files = view.get_choosen_files()
         err_message = model.check_file_input(chosen_files)
         if err_message != config.ErrorMessages.NO_ERROR:
@@ -417,11 +470,17 @@ class DeathStar(tk.Frame):
             self.librosa_mfccs, self.praat_mfccs = model.get_all_mfccs(
                 self.rec_names)
 
-            self.fill_menus(recName2phoneme)
+            self._fill_menus(recName2phoneme)
             self.show_mfccs()
             self.got_data = True
 
     def update_mfccs(self):
+        """Update the mfccs based on the selected options. Also show statistics if visible
+        @called by: internal and view
+
+        Returns:
+            dict(str, [[float]]): the updated MFCCs
+        """
         mfccs = dict()
         if self.calculation_option == config.Calc.PRAAT.value:
             mfccs = dict.fromkeys(list(self.praat_mfccs.keys()))
@@ -456,15 +515,18 @@ class DeathStar(tk.Frame):
         self.current_mfccs = mfccs
 
         if self.statistics_visible:
-            self.hide_statistics()
-            self.plot_statistics_by_coefficient(self.current_coef)
+            self._hide_statistics()
+            self._plot_statistics_by_coefficient(self.current_coef)
 
         return mfccs
 
     def show_mfccs(self):
+        """Display the mfccs in the death-star plot
+        @called by: internal and view
+        """
         self.plot.get_tk_widget().delete(self.rect_id)
         self.ax.clear()
-        self.fillStarOutline()
+        self._fillStarOutline()
 
         mfccs = self.update_mfccs()
 
@@ -492,12 +554,19 @@ class DeathStar(tk.Frame):
                               self.config.angles[0], color="black", lw=2.5)
         self.plot.draw()
 
-    def give_data(self, left_mfccs, right_mfccs):
+    def give_data(self, left_mfccs: dict, right_mfccs: dict):
+        """Only needed by merged star. Display the mfccs of both left and right DeathStar
+        @called by: view
+
+        Args:
+            left_mfccs (dict(str, [[float]]) )
+            right_mfccs (dict(str, [[float]]) )
+        """
         self.left_mfccs = left_mfccs
         self.right_mfccs = right_mfccs
 
         self.ax.clear()
-        self.fillStarOutline()
+        self._fillStarOutline()
 
         global_min = 0
         global_max = 0
@@ -538,19 +607,21 @@ class DeathStar(tk.Frame):
 
         self.plot.draw()
 
-    def check_phoneme(self, pho):
-        """Check, if the given phoneme exists in this recording
+    def check_phoneme(self, pho: str):
+        """Check, if the given phoneme exists in this recording. Needed for phoneme normalization
+        @called by: view
 
         Args:
-            pho (string): the phoneme to check
+            pho (str): the phoneme to check
 
         Returns:
-            boolean: True if phoneme exists for this recording, False if not
+            bool: True if phoneme exists for this recording, False if not
         """
         return pho in self.praat_mfccs.keys()
 
     def add_norm_remPhoneme(self):
-        """Add the norm option remPhoneme to the possible options
+        """Add the norm option remPhoneme to the possible options. Needed for phoneme normalization
+        @called by: view
         """
         if self.norm_remPhoneme_ID == "":
             self.norm_remPhoneme_ID = self.norm_treeview.insert('', "end", text='',
@@ -559,7 +630,8 @@ class DeathStar(tk.Frame):
             # self.norm_treeview.bind()
 
     def remove_norm_remPhoneme(self):
-        """Remove the norm option remPhoneme from the possible options
+        """Remove the norm option remPhoneme from the possible options. Needed for phoneme normalization
+        @called by: view
         """
         if self.norm_remPhoneme_ID != "":
             self.norm_treeview.delete(self.norm_remPhoneme_ID)
