@@ -9,12 +9,16 @@ It allows the comparison of two plots next to each other.
 
 ## Current work
 - export of MFCCs and Plots
-- needed for it -> more space & separate possibility to export for both death stars
-- solution
-    - make mfcc-calc and mfcc-norm options into smaller dropdown menu
-        - currently working on this
-    - toolbar above new dropdown menus for every death star
-- additional thought -> info menu in middle of toolbar (where craftyy man go for theirb afterwork beer)
+    - needed for it -> more space & separate possibility to export for both death stars
+    - solution
+        - make mfcc-calc and mfcc-norm options into smaller dropdown menu
+            - currently working on this
+        - toolbar above new dropdown menus for every death star
+    - additional thought -> info menu in middle of toolbar (where craftyy man go for theirb afterwork beer)
+- clean code and make view and model as classes
+    - missing cleanup: view and DeathStar
+    - model and view not classes yet
+
 
 ### Gedanken zum Treffen
 - nächster Milestone: Treffen mit Flow und Christoph
@@ -27,13 +31,12 @@ It allows the comparison of two plots next to each other.
     - Interspeech: "Lots of /i/s in the MFCC-Plotter" / "How was it to use the MFCC-Plotter" -> erste Anwendung
 - nötige Schritte für Software
     2. Export von Plots und MFCCs
-    3. create new repo
-    4. mit deltas beschäftigen
-    5. Import von MFCCs
-    6. hatching only when overlapping rectangles
-    7. resolve errors
-    8. dev on Windows
-    9. Bereitstellen als git repository
+    3. mit deltas beschäftigen
+    4. Import von MFCCs
+    5. hatching only when overlapping rectangles
+    6. resolve errors
+    7. dev on Windows
+    8. Bereitstellen als git repository
 
 ### Offene Punkte
 - Anwendungsbereiche
@@ -89,7 +92,6 @@ It allows the comparison of two plots next to each other.
     - Angabe des Grades der Überlappung von zwei Phonemen oder Dimensionen
     - x flat joke result: show answer after packing/place without update (triggerd by cursor keyboard input)
 - errors and bugs
-    - clean code and make view and model as classes
     - dev for windows
         - window does not fit screensize on windows
         - white/off-white colours on windows
