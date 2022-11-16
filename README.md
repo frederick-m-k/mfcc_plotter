@@ -13,9 +13,12 @@ It allows the comparison of two plots next to each other.
 - solution
     - make mfcc-calc and mfcc-norm options into smaller dropdown menu
     - put click event on every dropdown entry
-        - currently working on this
     - toolbar above new dropdown menus for every death star
-- additional thought -> info menu in middle of toolbar (where craftyy man go for theirb afterwork beer)
+        - export-features: export von MFCCs numerisch (alle MFCCs in json), export von MFCCs visuell (DeathStar, Statistiken von einzelnen MFCCCs (jeweils ECDF, Box und/oder hist))
+        - import-features: import von MFCCs, import von wav-TextGrid
+        - wir brauchen ein Pie-Menu
+        - currently working on this
+- additional thought -> info menu in middle of toolbar (where crafty man go for their afterwork beer)
 
 ### Gedanken zum Treffen
 - nächster Milestone: Treffen mit Flow und Christoph
@@ -52,6 +55,7 @@ It allows the comparison of two plots next to each other.
         - Ali Niebuhr aus Kopenhagen
     - Evaluation von Sprachsynthese-System                   -> Vanessa
 - als Website
+- FAQ
 - Tool in der Lehre testen
     - Wintersemester ist P6 zu Spracherkennung und Sprachsynthese
 - Input von James Kirby
