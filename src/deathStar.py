@@ -87,7 +87,8 @@ class DeathStar(tk.Frame):
             ",\n".join([spk for spk in list(recName2phoneme.keys())]))
         self.left_frame.pack(side="left")
 
-        self.create_phoneme_options(self.menu_frame, recName2phoneme)
+        pho_frame = self.create_phoneme_options(self.menu_frame, recName2phoneme)
+        pho_frame.pack(side="left")
 
         calcNorm_frame = tk.Frame(self.menu_frame)
         calc_frame = self.create_calculation_options(calcNorm_frame)
@@ -308,27 +309,23 @@ class DeathStar(tk.Frame):
             main_frame (tk.Frame)
             recName2phoneme (dict(str, [str]))
         """
-        speaker = list(recName2phoneme.keys())[0]
+        phoneme_frame = tk.Frame(main_frame)
         phonemes = sorted(
             list(set([v for val in list(recName2phoneme.values()) for v in val])))
-        option = ttk.Treeview(main_frame, columns=speaker,
-                              displaycolumns=speaker, height=8, show="tree")
-        option.column("#0", width=0, stretch=NO)
-        option.column(speaker, anchor="center", stretch=NO)
-        # option.heading(speaker, text=speaker, anchor="center")
 
-        default_sel = option.insert('', 'end', text='', values=("all"))
-        option.selection_set(default_sel)
-        option.focus(default_sel)
-        option.see(default_sel)
+        heading = tk.Label(phoneme_frame, text="Phoneme")
+
+        tmp = tk.StringVar()
+        tmp.set("all")
+        options = tk.OptionMenu(
+            phoneme_frame, tmp, *["all"] + phonemes,
+            command=lambda event: view.on_option_change(event, tmp, self))
+        options.config(width=len(config.Norm.NO_NORM.value))
         self.selected_phoneme = "all"
 
-        for phoneme in phonemes:
-            option.insert('', 'end', text='', values=(phoneme))
-
-        option.pack(side="left", padx=10, pady=5)
-        option.bind("<Button-1>", lambda event,
-                    tree=option: view.handle_options(event, tree, self))
+        heading.pack(side="top")
+        options.pack(side="bottom", pady=5)
+        return phoneme_frame
 
     def create_calculation_options(self, parent_frame):
         calc_options = [config.Calc.PRAAT, config.Calc.LIBROSA]
@@ -340,43 +337,18 @@ class DeathStar(tk.Frame):
         tmp = tk.StringVar()
         tmp.set(config.Calc.PRAAT.value)
         options = tk.OptionMenu(
-            calc_frame, tmp, *[o.value for o in calc_options])
+            calc_frame, tmp, *[o.value for o in calc_options],
+            command=lambda event: view.on_option_change(event, tmp, self))
         options.config(width=len(config.Norm.NO_NORM.value))
 
-        # column_name = "calc_option"
-        # # width = int(main_screen_width / 8)
-        # options = ttk.Treeview(parent_frame, columns=column_name,
-        #                        height=len(calc_options))
-        # options.column("#0", width=0, stretch=NO)
-        # options.column(column_name, anchor="center")
-        # options.heading(
-        #     column_name, text="MFCC calculation", anchor="center")
-
-        # default_sel = options.insert(
-        #     '', "end", text='', values=(calc_options[0], ))
-        # options.insert('', "end", text='', values=(calc_options[1], ))
-
-        # options.selection_set(default_sel)
-        # options.focus(default_sel)
-        # options.see(default_sel)
         self.calculation_option = calc_options[0].value
 
-        # options.bind("<Button-1>", lambda event,
-        #              tree=options: view.handle_options(event, tree, self))  # , main_frame, button_display_mfccs))
         heading.pack(side="top")
         options.pack(side="bottom")
         return calc_frame
 
     def create_norm_options(self, parent_frame):
         norm_options = [config.Norm.REM_SPEAKER]
-        # all_have_partner = True
-        # # check if all selected phonems are present for both speakers
-        # for sel_phoneme in selected_phonemes:
-        #     if False in [sel_phoneme in values for values in get_all_phonemes().values()]:
-        #         all_have_partner = False
-        #         break
-        # if all_have_partner:
-        #     norm_options.append("phoneme normalization (remove speaker info)")
         norm_options.append(config.Norm.NO_NORM)
 
         norm_frame = tk.Frame(parent_frame)
@@ -386,29 +358,10 @@ class DeathStar(tk.Frame):
         tmp = tk.StringVar()
         tmp.set(config.Norm.NO_NORM.value)
         self.norm_treeview = tk.OptionMenu(
-            norm_frame, tmp, *[o.value for o in norm_options])
+            norm_frame, tmp, *[o.value for o in norm_options],
+            command=lambda event: view.on_option_change(event, tmp, self))
         self.norm_treeview.config(width=len(config.Norm.NO_NORM.value))
-        # column_name = "norm_option"
-        # self.norm_treeview = ttk.Treeview(
-        #     parent_frame, columns=column_name, height=len(norm_options))
-        # self.norm_treeview.column("#0", width=0, stretch=NO)
-        # self.norm_treeview.column(column_name, anchor="center")  # width=width,
-        # self.norm_treeview.heading(
-        #     column_name, text="Choose normalization", anchor="center")
 
-        # for i in range(len(norm_options) - 1):
-        #     self.norm_treeview.insert('', "end", text='',
-        #                               values=(norm_options[i].value, ))
-
-        # default_sel = self.norm_treeview.insert(
-        #     '', "end", text='', values=(norm_options[len(norm_options) - 1].value, ))
-        # self.norm_treeview.selection_set(default_sel)
-        # self.norm_treeview.focus(default_sel)
-        # self.norm_treeview.see(default_sel)
-        # self.norm_option = norm_options[len(norm_options) - 1].value
-
-        # self.norm_treeview.bind("<Button-1>", lambda event,
-        #                         tree=self.norm_treeview: view.handle_options(event, tree, self))
         heading.pack(side="top")
         self.norm_treeview.pack(side="bottom")
 

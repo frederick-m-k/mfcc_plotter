@@ -209,27 +209,23 @@ def switch_display(button, left_star, right_star, merged_star):
             right_star.currently_seen = True
     root.update()
 
-
-def handle_options(event, tree, star):
-    item = tree.identify("item", event.x, event.y)
-    label = tree.item(item, "values")
-    if len(label) > 0:
-        phoneme = True
-        label = label[0]
-        for calc in config.Calc:
-            if label == calc.value:
-                star.calculation_option = label
-                phoneme = False
-        for norm in config.Norm:
-            if label == norm.value:
-                star.norm_option = label
-                phoneme = False
-        if phoneme:
-            star.selected_phoneme = label
-            if stars[0].check_phoneme(star.selected_phoneme) and stars[1].check_phoneme(star.selected_phoneme):
-                star.add_norm_remPhoneme()
-            else:
-                star.remove_norm_remPhoneme()
+def on_option_change(event, stringVar: tk.StringVar, star: DeathStar):
+    label = stringVar.get()
+    phoneme = True
+    for calc in config.Calc:
+        if label == calc.value:
+            star.calculation_option = label
+            phoneme = False
+    for norm in config.Norm:
+        if label == norm.value:
+            star.norm_option = label
+            phoneme = False
+    if phoneme:
+        star.selected_phoneme = label
+        if stars[0].check_phoneme(star.selected_phoneme) and stars[1].check_phoneme(star.selected_phoneme):
+            star.add_norm_remPhoneme()
+        else:
+            star.remove_norm_remPhoneme()
     star.update_mfccs()
     if star.rect_id == None:
         star.show_mfccs()
@@ -488,8 +484,8 @@ def _create_mfccCalculation_options(main_frame, button_display_mfccs):
         column_name, text="Choose mfcc calculation option", anchor="center")
     for calc_option in calc_options:
         options.insert('', "end", text='', values=(calc_option, ))
-    options.bind("<Button-1>", lambda event,
-                 tree=options: handle_options(event, tree, main_frame, button_display_mfccs))
+    # options.bind("<Button-1>", lambda event,
+    #              tree=options: handle_options(event, tree, main_frame, button_display_mfccs))
     options.pack(side="left")
 
 
@@ -669,11 +665,11 @@ def get_choosen_files():
     Returns:
         (str): tuple of all filenames
     """
-    filenames = filedialog.askopenfilenames(initialdir=model.default_file_path,
-                                            title="Select your wavs and TextGrid files",
-                                            filetypes=(("All files", "*.*"), ("wavs", "*.wav"), ("TextGrids", "*.TextGrid")))
-    # filenames = ["/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.TextGrid",
-    #              "/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.wav"]
+    # filenames = filedialog.askopenfilenames(initialdir=model.default_file_path,
+    #                                         title="Select your wavs and TextGrid files",
+    #                                         filetypes=(("All files", "*.*"), ("wavs", "*.wav"), ("TextGrids", "*.TextGrid")))
+    filenames = ["/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.TextGrid",
+                 "/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.wav"]
     if len(filenames) > 0:
         model.set_def_file_path('/'.join(filenames[0].split('/')[: -1]))
     return filenames
