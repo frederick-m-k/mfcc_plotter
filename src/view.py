@@ -217,6 +217,15 @@ def _toggle_merge(button: tk.Button, left_star: DeathStar, right_star: DeathStar
     root.update()
 
 def on_option_change(event, stringVar: tk.StringVar, star: DeathStar):
+    """Called, when a value inside an OptionMenu gets changed.
+    Check, which option has been set and update the mfccs accordingly
+    @called by: DeathStar
+
+    Args:
+        event (_type_): not needed
+        stringVar (tk.StringVar): holding the label which was clicked
+        star (DeathStar): to change the variables, mfccs, and mfccs in
+    """
     label = stringVar.get()
     phoneme = True
     for calc in config.Calc:

@@ -48,6 +48,7 @@ class DeathStar(tk.Frame):
         self.rect_id = None
 
         self.norm_treeview = None
+        self.norm_stringVar = None
         self.norm_remPhoneme_ID = ""
 
         self.librosa_mfccs = dict()
@@ -365,10 +366,16 @@ class DeathStar(tk.Frame):
 
         tmp = tk.StringVar()
         tmp.set("all")
-        options = tk.OptionMenu(
-            phoneme_frame, tmp, *["all"] + phonemes,
-            command=lambda event: view.on_option_change(event, tmp, self))
-        options.config(width=len(config.Norm.NO_NORM.value))
+        options = ttk.Combobox(
+            phoneme_frame,
+            textvariable=tmp,
+            values=["all"] + phonemes,
+            justify="center",
+            width=len(config.Norm.NO_NORM.value),
+            height=len(["all"] + phonemes))
+        options["state"] = "readonly"
+        options.bind("<<ComboboxSelected>>", lambda event: view.on_option_change(event, tmp, self))
+        options.option_add('*TCombobox*Listbox.Justify', 'center')
         self.selected_phoneme = "all"
 
         heading.pack(side="top")
@@ -390,10 +397,16 @@ class DeathStar(tk.Frame):
 
         tmp = tk.StringVar()
         tmp.set(config.Calc.PRAAT.value)
-        options = tk.OptionMenu(
-            calc_frame, tmp, *[o.value for o in calc_options],
-            command=lambda event: view.on_option_change(event, tmp, self))
-        options.config(width=len(config.Norm.NO_NORM.value))
+        options = ttk.Combobox(
+            calc_frame,
+            textvariable=tmp,
+            values=[o.value for o in calc_options],
+            justify="center",
+            width=len(config.Norm.NO_NORM.value),
+            height=len(calc_options))
+        options["state"] = "readonly"
+        options.bind("<<ComboboxSelected>>", lambda event: view.on_option_change(event, tmp, self))
+        options.option_add('*TCombobox*Listbox.Justify', 'center')
 
         self.calculation_option = calc_options[0].value
 
@@ -414,12 +427,17 @@ class DeathStar(tk.Frame):
 
         heading = tk.Label(norm_frame, text="Normalization")
 
-        tmp = tk.StringVar()
-        tmp.set(config.Norm.NO_NORM.value)
-        self.norm_treeview = tk.OptionMenu(
-            norm_frame, tmp, *[o.value for o in norm_options],
-            command=lambda event: view.on_option_change(event, tmp, self))
-        self.norm_treeview.config(width=len(config.Norm.NO_NORM.value))
+        self.norm_stringVar = tk.StringVar()
+        self.norm_stringVar.set(config.Norm.NO_NORM.value)
+        self.norm_treeview = ttk.Combobox(norm_frame,
+            textvariable=self.norm_stringVar,
+            values=[o.value for o in norm_options],
+            justify="center",
+            width=len(config.Norm.NO_NORM.value),
+            height=len(norm_options))
+        self.norm_treeview["state"] = "readonly"
+        self.norm_treeview.bind("<<ComboboxSelected>>", lambda event: view.on_option_change(event, self.norm_treeview, self))
+        self.norm_treeview.option_add('*TCombobox*Listbox.Justify', 'center')
 
         heading.pack(side="top")
 
@@ -611,25 +629,25 @@ class DeathStar(tk.Frame):
         """
         return pho in self.praat_mfccs.keys()
 
+
     def add_norm_remPhoneme(self):
         """Add the norm option remPhoneme to the possible options. Needed for phoneme normalization
         @called by: view
         """
         if self.norm_remPhoneme_ID == "":
-            # self.norm_remPhoneme_ID = self.norm_treeview.insert('', "end", text='',
-            #                                                     values=(config.Norm.REM_PHONEME.value, ))
-            self.norm_treeview["menu"].add_command(
-                label=config.Norm.REM_PHONEME.value)
+            cur_val = self.norm_treeview["values"]
+            self.norm_treeview.config(values=list(set([v for v in cur_val] + [config.Norm.REM_PHONEME.value])))
+            # ["menu"].add_command(label=config.Norm.REM_PHONEME.value) #, command=lambda event: view.on_option_change(event, self.norm_stringVar, self))
             self.norm_remPhoneme_ID = config.Norm.REM_PHONEME.value
-            # self.norm_treeview.configure(height=3)
-            # self.norm_treeview.bind()
+
 
     def remove_norm_remPhoneme(self):
         """Remove the norm option remPhoneme from the possible options. Needed for phoneme normalization
         @called by: view
         """
         if self.norm_remPhoneme_ID != "":
-            self.norm_treeview["menu"].delete(
-                self.norm_treeview["menu"].index(self.norm_remPhoneme_ID))
+            cur_val = self.norm_treeview["values"]
+            self.norm_treeview.config(values=list(set([v for v in cur_val if v != config.Norm.REM_PHONEME.value])))
+            # self.norm_treeview["menu"].delete(
+            #     self.norm_treeview["menu"].index(self.norm_remPhoneme_ID))
             self.norm_remPhoneme_ID = ""
-            # self.norm_treeview.configure(height=2)

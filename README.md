@@ -93,6 +93,7 @@ It allows the comparison of two plots next to each other.
     - Angabe des Grades der Überlappung von zwei Phonemen oder Dimensionen
     - x flat joke result: show answer after packing/place without update (triggerd by cursor keyboard input)
 - errors and bugs
+    - Fehlerbehandlung für Fall: Phonem x ausgewählt, Normalisierung "remove phoneme" und anschließend Phonem all -> Fehler
     - dev for windows
         - window does not fit screensize on windows
         - white/off-white colours on windows
@@ -143,3 +144,4 @@ In an older version, the MFCC-Plotter used to be part of a bigger repo with seve
 | - | - |
 | v0.5.0 | intial version on this repo |
 | v0.5.1 | code got cleaned |
+| v0.6.0 | dropdown menus for selection options |
