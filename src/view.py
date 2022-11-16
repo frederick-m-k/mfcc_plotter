@@ -216,35 +216,23 @@ def _toggle_merge(button: tk.Button, left_star: DeathStar, right_star: DeathStar
             right_star.currently_seen = True
     root.update()
 
-
-def handle_options(event, tree, star: DeathStar):
-    """If user clicked on any possible option, set the selected option in the corresponding death star
-    @called by: DeathStar
-
-    Args:
-        event (tk.MouseEvent): to get clicked coordinates
-        tree (~ tk.Treeview): to get string of clicked coordinates
-        star (DeathStar): to set the selected option in
-    """
-    item = tree.identify("item", event.x, event.y)
-    label = tree.item(item, "values")
-    if len(label) > 0:
-        phoneme = True
-        label = label[0]
-        for calc in config.Calc:
-            if label == calc.value:
-                star.calculation_option = label
-                phoneme = False
-        for norm in config.Norm:
-            if label == norm.value:
-                star.norm_option = label
-                phoneme = False
-        if phoneme:
-            star.selected_phoneme = label
-            if stars[0].check_phoneme(star.selected_phoneme) and stars[1].check_phoneme(star.selected_phoneme):
-                star.add_norm_remPhoneme()
-            else:
-                star.remove_norm_remPhoneme()
+def on_option_change(event, stringVar: tk.StringVar, star: DeathStar):
+    label = stringVar.get()
+    phoneme = True
+    for calc in config.Calc:
+        if label == calc.value:
+            star.calculation_option = label
+            phoneme = False
+    for norm in config.Norm:
+        if label == norm.value:
+            star.norm_option = label
+            phoneme = False
+    if phoneme:
+        star.selected_phoneme = label
+        if stars[0].check_phoneme(star.selected_phoneme) and stars[1].check_phoneme(star.selected_phoneme):
+            star.add_norm_remPhoneme()
+        else:
+            star.remove_norm_remPhoneme()
     star.update_mfccs()
     if star.rect_id == None:
         star.show_mfccs()
@@ -387,11 +375,11 @@ def get_choosen_files():
     Returns:
         (str): tuple of all filenames
     """
-    filenames = filedialog.askopenfilenames(initialdir=model.default_file_path,
-                                            title="Select your wavs and TextGrid files",
-                                            filetypes=(("All files", "*.*"), ("wavs", "*.wav"), ("TextGrids", "*.TextGrid")))
-    # filenames = ["/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.TextGrid",
-    #              "/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.wav"]
+    # filenames = filedialog.askopenfilenames(initialdir=model.default_file_path,
+    #                                         title="Select your wavs and TextGrid files",
+    #                                         filetypes=(("All files", "*.*"), ("wavs", "*.wav"), ("TextGrids", "*.TextGrid")))
+    filenames = ["/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.TextGrid",
+                 "/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.wav"]
     if len(filenames) > 0:
         model.set_def_file_path('/'.join(filenames[0].split('/')[: -1]))
     return filenames
