@@ -24,6 +24,7 @@ class ErrorMessages(enum.Enum):
 
     NO_WAV = "Max .wav-file amount exceeded"
     NO_TG = "Max .TextGrid-file amount exceeded"
+    NO_ANNOT_JSON = "Max _annot.json-file amount exceeded"
     NON_MATCHING_FILE_AMOUNT = "The number of provided wavs and TextGrids do not match"
     NON_MATCHING_FILE_NAMES = "The provided file pairs (TextGrid and wav) should all match in their filename"
 

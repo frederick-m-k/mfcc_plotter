@@ -1,8 +1,50 @@
 
 import os
 import subprocess
+import json
 
 import config
+
+
+def parse_annotJson(file_path: str):
+    """_summary_
+
+    Args:
+        file_path (str): path to the annot.json file
+
+    Returns:
+        [(str, float, float)]: list of segments of phoneme label, start time, and end time
+            start and end time are in seconds
+    """
+    if not os.path.isfile(file_path):
+        print(f"wrong file {file_path}")
+        return
+    
+    all_segments = list()
+
+    spli = file_path.split('/')
+    name = spli[len(spli)-1].split('_annot.json')[0]
+    content = json.load(open(file_path, 'r'))
+    sample_rate = content["sampleRate"]
+    for items in content["levels"]:
+        if items["name"] != "Phonetic" and items["name"] != "phonetic":
+            continue
+        for item in items["items"]:
+            phonetic = ""
+            for label in item["labels"]:
+                if label["name"] == "Phonetic" or label["name"] == "phonetic":
+                    phonetic = label["value"]
+            if phonetic == "":
+                print("error in finding phoneme")
+                continue
+            sample_start = int(item["sampleStart"])
+            sample_end = sample_start + int(item["sampleDur"])
+
+            sample_start = float(sample_start) / float(sample_rate)
+            sample_end = float(sample_end) / float(sample_rate)
+            all_segments.append((phonetic, sample_start, sample_end))
+    
+    return all_segments
 
 
 def parseTextGrid(textGrid: str):
@@ -14,6 +56,7 @@ def parseTextGrid(textGrid: str):
 
     Returns:
         [(str, float, float)]: list of segments of phoneme label, start time, and end time
+            start and end time are in seconds
     """
     times = []
     counter = 0
@@ -146,7 +189,8 @@ def callMFCCPraatScript(pathToWav: str, calc_config: config.Calc_Config, path2Pr
 
 
 def merge_praatMFCCs_TG(frames, tg_data):
-    """Merge mfccs and textgrid information
+    """TODO rename and maybe replace
+    Merge mfccs and textgrid information
     @called by: model
 
     Args:

@@ -384,11 +384,12 @@ def get_choosen_files():
     Returns:
         (str): tuple of all filenames
     """
-    # filenames = filedialog.askopenfilenames(initialdir=model.default_file_path,
-    #                                         title="Select your wavs and TextGrid files",
-    #                                         filetypes=(("All files", "*.*"), ("wavs", "*.wav"), ("TextGrids", "*.TextGrid")))
-    filenames = ["/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.TextGrid",
-                 "/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.wav"]
+    filenames = filedialog.askopenfilenames(initialdir=model.default_file_path,
+                                            title="Select your wavs and TextGrid files",
+                                            filetypes=(("All files", "*.*"), ("wavs", "*.wav"), ("TextGrids", "*.TextGrid"), ("json-files", "*.json")))
+    # TODO not write the types of files here, but rather get them out of the model
+    # filenames = ["/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.TextGrid",
+    #              "/Users/frederickkukla/Projects/SpeakerRecognitionProject/resources/data/0023/E_0023_recordingNr_2.wav"]
     if len(filenames) > 0:
         model.set_def_file_path('/'.join(filenames[0].split('/')[: -1]))
     return filenames
@@ -429,7 +430,8 @@ def display_MFCC_file_warning(mfcc_creation_problem):
     """
     for _, err_message in mfcc_creation_problem:
         if err_message == config.ErrorMessages.MFCC_FILES_EXIST:
-            show_warning(config.ErrorMessages.MFCC_FILES_EXIST.value)
+            # show_warning(config.ErrorMessages.MFCC_FILES_EXIST.value)
+            pass
         elif err_message == config.ErrorMessages.MISSING_PRAAT_PATH:
             _show_error(config.ErrorMessages.MISSING_PRAAT_PATH.value)
             return False

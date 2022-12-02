@@ -87,7 +87,7 @@ class DeathStar(tk.Frame):
             conf (config.Config): _description_
         """
         button_choose_file = tk.Button(
-            self.left_frame, text="Choose wav\nand TextGrid", font=(conf.font_family, conf.font_size), command=self._browse_files)
+            self.left_frame, text="Provide wav\nwith annotation", font=(conf.font_family, conf.font_size), command=self._browse_files)
         button_choose_file.pack(side="bottom")
         self.left_frame.pack(side="left", padx=5)
 
@@ -106,7 +106,7 @@ class DeathStar(tk.Frame):
             self.left_frame.winfo_children()[1].destroy()
 
         self._addRecLabel(
-            ",\n".join([spk for spk in list(recName2phoneme.keys())]))
+            ",\n".join([spk for spk in sorted(list(recName2phoneme.keys()))]))
         self.left_frame.pack(side="left")
 
         pho_frame = self._create_phoneme_options(self.menu_frame, recName2phoneme)
@@ -193,8 +193,7 @@ class DeathStar(tk.Frame):
 
             # histogram
             ax_hist = fig.add_subplot(221, label="right")
-            ax_hist.hist([left_mf, right_mf], color=[
-                         config.ColorCoding.COMB1.value[1], config.ColorCoding.COMB2.value[2]])
+            ax_hist.hist([left_mf, right_mf], color=[config.ColorCoding.COMB1.value[1], config.ColorCoding.COMB2.value[2]])
             ax_hist.set_ylabel("Occurrence")
             ax_hist.set_xlim(x_range)
             ax_hist.set_xlabel("MFCC values")
@@ -228,22 +227,20 @@ class DeathStar(tk.Frame):
         else:                       # =non-merged stars
             mfccs = [frame[coef] for frame in self.current_mfccs]
 
-            self.stat_frame = tk.Frame(self.root, background="white",
-                                       highlightbackground="grey", highlightthickness=4)
+            self.stat_frame = tk.Frame(self.root, background="white", highlightbackground="grey", highlightthickness=4)
 
             upper_frame = tk.Frame(self.stat_frame)
             # textual information
             text_info = tk.Label(upper_frame, justify="center",
-                                 text="coefficent " +
-                                 str(coef+1) + ";\n mean: " +
-                                 str(np.round(np.mean(mfccs), 2)) + "; median: " +
-                                 str(np.round(np.median(mfccs), 2)) + "; st dev: " + str(np.round(np.std(mfccs), 2)) +
-                                 "; \n number of samples: " + str(len(mfccs)))
+                                text="coefficent " +
+                                str(coef+1) + ";\n mean: " +
+                                str(np.round(np.mean(mfccs), 2)) + "; median: " +
+                                str(np.round(np.median(mfccs), 2)) + "; st dev: " + str(np.round(np.std(mfccs), 2)) +
+                                "; \n number of samples: " + str(len(mfccs)))
             text_info.pack(side="left", padx=15)
 
             # close button
-            close_button = tk.Button(upper_frame, text="Close",
-                                     command=self._hide_statistics)
+            close_button = tk.Button(upper_frame, text="Close", command=self._hide_statistics)
             close_button.pack(side="right")
 
             upper_frame.pack(side="top")
@@ -331,19 +328,27 @@ class DeathStar(tk.Frame):
         self.ax.set_theta_direction(-1)
 
         _, theta_labels = self.ax.set_thetagrids(np.degrees(self.config.angles[:-1]),  # self.config.labels,
-                                                 fontsize=10, fontfamily=self.config.font_family)  # , rotation_mode="anchor", rotation=90)
+                                                fontsize=10, fontfamily=self.config.font_family)  # , rotation_mode="anchor", rotation=90)
 
         self.ax.tick_params(axis="x", labelrotation=0)
         labels = self.ax.set_xticklabels(
             ["MFCC"+str(i) for i in range(1, self.config.n_mfccs+1)])
 
-    def _addRecLabel(self, rec_name: str):
+    def _addRecLabel(self, rec_name: str, max_recs: int=4):
         """Add a tk.Label with the name of the recording
+        If the amount of recordings is higher than max_recs, only the first and last one will be displayed
         @called by: internal
 
         Args:
             rec_name (str)
+            max_recs (int, optional): defaults to 4
         """
+        if rec_name.count('\n') > max_recs-1:
+            spli = rec_name.split('\n')
+            first_part = spli[0]
+            last_part = spli[len(spli)-1]
+            rec_name = first_part + "\n..." + str(rec_name.count('\n')-1) + " more...\n" + last_part
+
         spkLabel = tk.Label(self.left_frame, text=rec_name, font=(
             self.config.font_family, self.config.font_size, "bold"))
 
@@ -517,8 +522,7 @@ class DeathStar(tk.Frame):
             return
         elif self.selected_phoneme == "all":
             # transform the dict mfccs into a nested list of frames
-            mfccs = [mfccsOfOneSamp for mfccsOfOnePho in mfccs.values()
-                     for mfccsOfOneSamp in mfccsOfOnePho]
+            mfccs = [mfccsOfOneSamp for mfccsOfOnePho in mfccs.values() for mfccsOfOneSamp in mfccsOfOnePho]
         else:
             mfccs = mfccs[self.selected_phoneme]
 
@@ -552,16 +556,16 @@ class DeathStar(tk.Frame):
         median = Category.calc_medians_mfccs(mfccs)
         for i in range(self.config.n_mfccs):
             self.ax.fill_betweenx([lowerquant[i], global_min, global_max, upperquant[i]],
-                                  self.config.angles[i], self.config.angles[i+1],
-                                  color=self.colorCoding[6], edgecolor="white")  # , color=category.main_color, edgecolor=category.edgecolor,
+                                    self.config.angles[i], self.config.angles[i+1],
+                                    color=self.colorCoding[6], edgecolor="white")  # , color=category.main_color, edgecolor=category.edgecolor,
             # facecolor=category.facecolor, alpha=category.alpha, hatch=category.hatch))
             self.ax.fill_betweenx([median[i], global_min, global_max, median[i]], self.config.angles[i],
-                                  self.config.angles[i+1], color=self.colorCoding[3])  # , edgecolor="white")
+                                    self.config.angles[i+1], color=self.colorCoding[3])  # , edgecolor="white")
 
             self.ax.fill_betweenx([global_min, global_max], self.config.angles[i],
-                                  self.config.angles[i], color="#d2d2d2", lw=2.5)
+                                    self.config.angles[i], color="#d2d2d2", lw=2.5)
         self.ax.fill_betweenx([global_min, global_max], self.config.angles[0],
-                              self.config.angles[0], color="black", lw=2.5)
+                                self.config.angles[0], color="black", lw=2.5)
         self.plot.draw()
 
     def give_data(self, left_mfccs: dict, right_mfccs: dict):
@@ -597,23 +601,23 @@ class DeathStar(tk.Frame):
         right_median = Category.calc_medians_mfccs(right_mfccs)
         for i in range(self.config.n_mfccs):
             self.ax.fill_betweenx([right_lowerquant[i], global_min, global_max, right_upperquant[i]],
-                                  self.config.angles[i], self.config.angles[i+1],
-                                  color=right_color[0], edgecolor=right_color[1], facecolor=right_color[2], alpha=right_color[4], hatch=right_color[5])
+                                    self.config.angles[i], self.config.angles[i+1],
+                                    color=right_color[0], edgecolor=right_color[1], facecolor=right_color[2], alpha=right_color[4], hatch=right_color[5])
 
             self.ax.fill_betweenx([left_lowerquant[i], global_min, global_max, left_upperquant[i]],
-                                  self.config.angles[i], self.config.angles[i+1],
-                                  color=left_color[0], edgecolor=left_color[1], facecolor=left_color[2], alpha=left_color[4], hatch=left_color[5])
+                                    self.config.angles[i], self.config.angles[i+1],
+                                    color=left_color[0], edgecolor=left_color[1], facecolor=left_color[2], alpha=left_color[4], hatch=left_color[5])
 
             self.ax.fill_betweenx([right_median[i], global_min, global_max, right_median[i]], self.config.angles[i],
-                                  self.config.angles[i+1], color=right_color[3])  # , edgecolor="white")
+                                    self.config.angles[i+1], color=right_color[3])  # , edgecolor="white")
             self.ax.fill_betweenx([left_median[i], global_min, global_max, left_median[i]], self.config.angles[i],
-                                  self.config.angles[i+1], color=left_color[3])  # , edgecolor="white")
+                                    self.config.angles[i+1], color=left_color[3])  # , edgecolor="white")
 
             self.ax.fill_betweenx([global_min, global_max], self.config.angles[i],
-                                  self.config.angles[i], color="#d2d2d2", lw=2.5)
+                                    self.config.angles[i], color="#d2d2d2", lw=2.5)
 
         self.ax.fill_betweenx([global_min, global_max], self.config.angles[0],
-                              self.config.angles[0], color="black", lw=2.5)
+                                self.config.angles[0], color="black", lw=2.5)
 
         self.plot.draw()
 

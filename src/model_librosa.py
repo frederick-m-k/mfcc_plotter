@@ -72,7 +72,8 @@ def get_duration(wav: str):
 
 
 def merge_librosaMFCCs_TG(frames, tg_data, wav_length: float):
-    """Map textgrid data to mfcc frames
+    """TODO rename for annot.json and maybe replace
+    Map textgrid data to mfcc frames
     @called by: model
 
     Args:

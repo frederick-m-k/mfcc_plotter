@@ -72,6 +72,7 @@ It allows the comparison of two plots next to each other.
         - issue with display of rec names when 7+ recordings loaded into one death star
     - backend functionality
         - create logger
+        - all loaded files are stored and kept even though other data is used as input
     - frontend functionality
         - Export von MFCCs bzw. von nur den 50-Quantil-Daten
         - export plots in png or pdf format
@@ -145,3 +146,4 @@ In an older version, the MFCC-Plotter used to be part of a bigger repo with seve
 | v0.5.0 | intial version on this repo |
 | v0.5.1 | code got cleaned |
 | v0.6.0 | dropdown menus for selection options |
+| v0.7.0 | added parsing option for _annot.json files |

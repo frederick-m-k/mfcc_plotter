@@ -87,25 +87,31 @@ def check_file_input(input):
     """
     wav_c = 0
     tg_c = 0
+    ajs_c = 0
     for file_name in input:
         if file_name.endswith(".wav"):
             wav_c += 1
         elif file_name.endswith(".TextGrid"):
             tg_c += 1
+        elif file_name.endswith("_annot.json"):
+            ajs_c += 1
 
     if conf_config.n_filepairs != None:
         if wav_c != conf_config.n_filepairs:
             return config.ErrorMessages.NO_WAV
         elif tg_c != conf_config.n_filepairs:
             return config.ErrorMessages.NO_TG
+        elif ajs_c != conf_config.n_filepairs:
+            return config.ErrorMessages.NO_ANNOT_JSON
     else:
-        if wav_c != tg_c:
+        if wav_c != tg_c and wav_c != ajs_c:
             return config.ErrorMessages.NON_MATCHING_FILE_AMOUNT
 
     short_names = []
     for file_name in input:
         split = file_name.split("/")
-        short_names.append(split[len(split) - 1].split(".")[0])
+        to_append = split[len(split) - 1].split(".")[0]
+        short_names.append(to_append.replace("_annot", '') if file_name.endswith("_annot.json") else to_append)
     for name in short_names:
         if short_names.count(name) != 2:
             return config.ErrorMessages.NON_MATCHING_FILE_NAMES
@@ -115,7 +121,7 @@ def check_file_input(input):
 
 def get_rec_names(input):
     """Get the names of the recordings, i.e. the path of the filename before the .wav
-    @called by: DeathStar
+    @called by: DeathStar, internal
 
     Args:
         input ( (str) ): tuple of filenames
@@ -126,7 +132,8 @@ def get_rec_names(input):
     all_rec_names = set()
     for inp in input:
         short_inp = inp.split("/")
-        all_rec_names.add(short_inp[len(short_inp) - 1].split(".")[0])
+        to_add = short_inp[len(short_inp) - 1].split(".")[0]
+        all_rec_names.add(to_add.replace("_annot", '') if inp.endswith("_annot.json") else to_add)
     return list(all_rec_names)
 
 
@@ -163,15 +170,23 @@ def _create_librosa_mfccs(filenames, rec_name):
     if not rec_name in all_mfccs.keys():
         all_mfccs[rec_name] = dict()
 
-    wav, tg = sorted(filenames, reverse=True)
+    all_names = sorted(filenames, reverse=True)
+    for name in all_names:
+        if name.endswith(".wav"):
+            wav = name
+        elif name.endswith("_annot.json") or name.endswith(".TextGrid"):
+            annot = name
     raw_mfccs = model_librosa.run_librosa(wav, calc_config)
     without_c0 = model_librosa.remove_c0(raw_mfccs)
     edited_mfccs = model_librosa.ndArrayToList(without_c0)
-    tg_data = model_praat.parseTextGrid(tg)
+    if annot.endswith(".TextGrid"):
+        annot_data = model_praat.parseTextGrid(annot)
+    elif annot.endswith("_annot.json"):
+        annot_data = model_praat.parse_annotJson(annot) # TODO maybe wrong in model_praats
     wav_length = model_librosa.get_duration(wav)
 
     _add_new_mfccs(
-        model_librosa.merge_librosaMFCCs_TG(edited_mfccs, tg_data, wav_length),
+        model_librosa.merge_librosaMFCCs_TG(edited_mfccs, annot_data, wav_length),
         rec_name,
         "librosa"
     )
@@ -194,16 +209,24 @@ def _create_praat_mfccs(filenames, rec_name):
 
     new_mfcc_files = []
 
-    wav, tg = sorted(filenames, reverse=True)
+    all_names = sorted(filenames, reverse=True)
+    for name in all_names:
+        if name.endswith(".wav"):
+            wav = name
+        elif name.endswith("_annot.json") or name.endswith(".TextGrid"):
+            annot = name
     err_message = model_praat.callMFCCPraatScript(wav, calc_config, praat_path)
     new_mfcc_files.append((wav, err_message))
 
     mfcc_frames = model_praat.parseMFCCFile(
         wav.replace(".wav", ".MFCC"), calc_config)
-    tg_data = model_praat.parseTextGrid(tg)
+    if annot.endswith(".TextGrid"):
+        annot_data = model_praat.parseTextGrid(annot)
+    elif annot.endswith("_annot.json"):
+        annot_data = model_praat.parse_annotJson(annot) # TODO maybe wrong in model_praats
 
     _add_new_mfccs(
-        model_praat.merge_praatMFCCs_TG(mfcc_frames, tg_data),
+        model_praat.merge_praatMFCCs_TG(mfcc_frames, annot_data),
         rec_name,
         "praat"
     )
@@ -276,10 +299,10 @@ def norm_mfccs_rem_speaker(mfccs):
     @called by: DeathStar
 
     Args:
-        mfccs ( dict(str: [[]]) ): mfccs to normalize
+        mfccs ( dict(str: [[float]]) ): mfccs to normalize
 
     Returns:
-        dict(str: dict(str: [[]])): rec2phoneme2frames
+        dict(str: dict(str: [[float]])): rec2phoneme2frames
     """
     return normalize_mfccs.normalize_mfccs_remove_speaker(mfccs)
 
@@ -301,11 +324,9 @@ def norm_mfccs_rem_phonem(utt_ids, calc_option, phoneme2norm):
     for cur_utt, val in all_mfccs.items():
         if phoneme2norm in val[calc_option].keys():
             if cur_utt in utt_ids:
-                [frames2norm.append(frame)
-                 for frame in val[calc_option][phoneme2norm]]
+                [frames2norm.append(frame) for frame in val[calc_option][phoneme2norm]]
             else:
-                [normalizerFrames.append(frame)
-                 for frame in val[calc_option][phoneme2norm]]
+                [normalizerFrames.append(frame) for frame in val[calc_option][phoneme2norm]]
 
     normed_frames = normalize_mfccs.normalize_mfccs_remove_phonem(
         frames2norm, normalizerFrames)
