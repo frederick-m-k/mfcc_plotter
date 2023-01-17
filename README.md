@@ -146,6 +146,7 @@ In an older version, the MFCC-Plotter used to be part of a bigger repo with seve
 | v0.6.0 | dropdown menus for selection options |
 | v0.7.0 | added parsing option for _annot.json files |
 | v0.8.0 | added actual research results in the resources/ dir |
+| v0.8.1 | found and removed error with the information menu |
 
 
 ## Research results

@@ -27,12 +27,12 @@ def parse_annotJson(file_path: str):
     content = json.load(open(file_path, 'r'))
     sample_rate = content["sampleRate"]
     for items in content["levels"]:
-        if items["name"] != "Phonetic" and items["name"] != "phonetic":
+        if items["name"] != "Phonetic" and items["name"] != "phonetic" and items["name"] != "MAU":
             continue
         for item in items["items"]:
             phonetic = ""
             for label in item["labels"]:
-                if label["name"] == "Phonetic" or label["name"] == "phonetic":
+                if label["name"] == "Phonetic" or label["name"] == "phonetic" or label["name"] == "MAU":
                     phonetic = label["value"]
             if phonetic == "":
                 print("error in finding phoneme")

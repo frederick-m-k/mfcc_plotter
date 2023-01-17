@@ -49,9 +49,9 @@ class ColorCoding(enum.Enum):
     # xxxx, edgecolor, facecolor, median, opacity, hatching, boxplot, mergedYesNo, position
     # edgecolor is main color for COMB1, facecolor is main color for COMB2
     COMB1 = ("#00000019", "#09cbf6", "none",
-             "blue", 0.9, "/", "#09cbf6", False, "left")
+            "blue", 0.9, "/", "#09cbf6", False, "left")
     COMB2 = ("#00000019", "white", "purple", "red",
-             0.9, "/", "purple", False, "right")
+            0.9, "/", "purple", False, "right")
     MERG = ("#00000019", "purple", "none", "pink",
             0.9, "/", "purple", True, "middle")
 

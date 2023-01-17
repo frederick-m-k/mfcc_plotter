@@ -257,7 +257,7 @@ def _init_information_screen():
     pass
 
 
-def _show_information_screen():
+def _show_information_screen(event):
     """Init and show information screen
     @called by: internal
     """
