@@ -5,7 +5,7 @@ This repository contains the project MFCC-Plotter.
 ## Overview
 *MFCC-Plotter* is a graphical and interactive method to compare cepstal data, specifically MFCCs.
 The MFCCs are displayed in 13 dimensions in a polar-box-plot like structure.
-![Screenshot of the main menu of the MFCC plotter comparing the phoneme /f/ from two different input sources](imgs/main_menu_plotter.png)
+![Screenshot of the main menu of the MFCC plotter comparing the phoneme /f/ from two different input sources](src/imgs/main_menu_plotter.png)
 It allows the comparison of two plots next to each other.
 
 
