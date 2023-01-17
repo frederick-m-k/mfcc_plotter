@@ -132,9 +132,7 @@ It allows the comparison of two plots next to each other.
     - dafür vorbereiten: was genau heißt es, MFCCs in Forensik oder bei Sex-Appeal zu verwenden
 
 
-### Technical background
-Found in the `src/mfcc_display/` directory. Will be separated into a new repository before going into production.
-Developed with python and tkinter.
+## Technical background
 Used packages are found in the `requirements.txt` file.
 
 ### Old repository
@@ -147,3 +145,15 @@ In an older version, the MFCC-Plotter used to be part of a bigger repo with seve
 | v0.5.1 | code got cleaned |
 | v0.6.0 | dropdown menus for selection options |
 | v0.7.0 | added parsing option for _annot.json files |
+| v0.8.0 | added actual research results in the resources/ dir |
+
+
+## Research results
+The directory `resources/` contains one sub directory with some research results.
+
+### Research on emotional speech
+In the directory `resources/wasep_public_results/` are three PDF-files located. They compare, of two speakers of 318 recordings in total, compare either
+- different phonemes for one emotion-contrast or
+- the same phoneme in five emotion-contrasts.
+These results are mainly an extension for a paper for the research conference ESSV 2023 (https://www.phonetik.uni-muenchen.de/ESSV2023/essv2023en.html).
+Once the paper is published, it will be linked here as well.

@@ -3,6 +3,12 @@ resources/*.zip
 resources/pima-indians-diabetes.csv
 resources/kiel_corpus/
 resources/ALC/
+resources/wasep
+resources/ansaetze
+resources/BAS_WebServices_help.txt
+resources/get_random_sample.py
+
+results/
 
 __pycache__/
 src/__pycache__/
