@@ -40,7 +40,7 @@ We developed the MFCC-Plotter for MacOS. It should work similarly on other Unix-
 | v0.7.0 | added parsing option for _annot.json files |
 | v0.8.0 | added actual research results in the resources/ dir |
 | v0.8.1 | found and removed error with the information menu |
-
+| v1.0.0 | First publishing, mainly intended for ESSV 2023 |
 
 ## Research results
 The directory `resources/` contains one sub directory with some research results.
