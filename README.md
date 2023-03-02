@@ -10,6 +10,11 @@ It allows the comparison of two plots next to each other. This enables a user to
 To provide one or several input recordings, you have to provide both audio files (only .wav-files are allowed so far) and annotation files (either .TextGrid or _annot.json).
 The MFCC-Plotter runs locally on your own machine.
 
+Please notice that this is a version of the MFCC-Plotter software which is not updated. Feel free to contact us if you are interested in the most current version.
+
+## Licencse
+This software is published under the Apache 2.0 License. Check the `LICENSE` file.
+
 
 ## Installation
 The MFCC-Plotter is written in python with the framework Tkinter. So far, when you want to use the graphical tool, you have to execute the commands for this yourself.
